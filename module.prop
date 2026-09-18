@@ -1,0 +1,6 @@
+id=a2dp_samplerate
+name=A2DP Auto SampleRate
+version=v1.0
+versionCode=1
+author=bqj6666
+description=让蓝牙 A2DP 输出采样率跟随音源，消除被强制重采样到 48000 造成的音质劣化。多数 Qualcomm BSP 把 A2DP 输出设备声明在 primary/default 音频模块里，而那些模块的输出只有 48000，导致 44.1k 音源必然经过重采样；AOSP 的原意是让 A2DP 走运行时注册的独立 bluetooth 模块（[dynamic rates]）。本模块在开机时读取设备自带的音频策略配置，删除非 bluetooth 模块里的 A2DP 输出声明，使 A2DP 回落到 bluetooth 模块的动态输出，于是 AF 按音源采样率开输出、codec 同步跟随。默认优先用 SUSFS open_redirect 投递（无挂载行）；设备不支持 SUSFS 时自动回退到 bind mount。内置多重安全阀：仅当检测到 AIDL 蓝牙音频模块、且配置确实需要修改时才动手，否则不做任何改动。
