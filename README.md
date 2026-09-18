@@ -188,6 +188,11 @@ sh tools/test-patch.sh
 - 两种命名风格（`bt_a2dp_out` / `BT A2DP Out`）均支持。
 - 幂等：对已打过补丁的文件再次运行结果不变。
 
+```sh
+# 构建可刷写模块 zip（产物在 dist/）
+sh tools/build-zip.sh
+```
+
 ---
 
 ## 许可
