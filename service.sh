@@ -15,6 +15,20 @@ while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 2; done
 sleep 5
 log "==== service ===="
 
+# ---- offload 与 patch 必须同步（否则连接耳机时报 APM error=1，声音走扬声器）----
+# post-fs-data 阶段设好了这里就是 no-op；只有 prop 没落盘（极早期 /data 未就绪）
+# 才补设，并重启一次蓝牙栈让 stack 重新读 prop。
+if [ "$(getprop ro.bluetooth.a2dp_offload.supported)" = "true" ] \
+   && [ "$(getprop persist.bluetooth.a2dp_offload.disabled)" != "true" ]; then
+  setprop persist.bluetooth.a2dp_offload.disabled true
+  log "offload disabled(late) -> $(getprop persist.bluetooth.a2dp_offload.disabled)"
+  cmd bluetooth_manager disable 2>/dev/null
+  sleep 2
+  cmd bluetooth_manager enable 2>/dev/null
+  cmd bluetooth_manager wait-for-state:STATE_ON 2>/dev/null
+  log "bt stack restarted to apply offload=off"
+fi
+
 A2DP_RE='"bt_a2dp_out"|"bt_a2dp_headphones"|"bt_a2dp_speaker"|"BT A2DP Out"|"BT A2DP Headphones"|"BT A2DP Speaker"'
 
 count_in() {   # $1 = 模块名正则

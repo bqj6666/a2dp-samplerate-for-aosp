@@ -101,5 +101,16 @@ else
 fi
 
 [ -n "$METHOD" ] || { log "ERR: open_redirect 与 bind 均失败，保持原厂状态"; exit 0; }
+
+# ---- D) 同步关闭 A2DP offload（关键，勿删）----
+# offload 的 a2dp output profile 就声明在被删掉的 primary/default 模块里。
+# 主声明没了但蓝牙栈仍标 A2dpOffloadEnabled=true 时，连接耳机 AudioPolicyManager
+# 会报 "APM failed to make available A2DP device addr=... error=1"，
+# 表现为「蓝牙已连接但声音还从扬声器出」，开关一次蓝牙才退到 software 路径恢复。
+if [ "$(getprop ro.bluetooth.a2dp_offload.supported)" = "true" ]; then
+  setprop persist.bluetooth.a2dp_offload.disabled true
+  log "offload disabled -> $(getprop persist.bluetooth.a2dp_offload.disabled)"
+fi
+
 log "OK: method=$METHOD target=$TARGET pub=$(wc -c < "$PUB") bytes"
 exit 0
